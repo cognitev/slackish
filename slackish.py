@@ -9,7 +9,7 @@ logger.setLevel(logging.INFO)
 class Command(object):
     registry = dict()
     def __init__(self, fn):
-        self.registry[fn.func_name] = {
+        self.registry[fn.__name__] = {
             'cmd': fn,
             'argnames': fn.__code__.co_varnames,
             'help': fn.__doc__
@@ -20,7 +20,7 @@ class Command(object):
         self._fn(*args, **kwargs)
     
 
-class Slackish(object):
+class SLackish(object):
     message_queue = []
     default_message = "Command Executed!"
     default_error_message = "Something went wrong!"
@@ -96,10 +96,10 @@ class Slackish(object):
             logger.debug("Command Key not found ")
     
     def post(self, message):
-        self.slack_client.api_call("chat.postMessage", channel=self.channel, text=message or self.default_message)
+        self.slack_client.api_call("chat.postMessage", channel=self.channel, text=message or default_message)
 
     def error(self, error_message):
-        self.slack_client.api_call("chat.postMessage", channel=self.channel, text=error_message or self.default_error_message)
+        self.slack_client.api_call("chat.postMessage", channel=self.channel, text=error_message or default_error_message)
     
     def flush(self,message_queue):
         for message in message_queue:
@@ -109,10 +109,10 @@ class Slackish(object):
     def handle(self, command, channel, registry):
         try:
             self.command_to_fn_call(command, registry)
-            self.flush(Slackish.message_queue)
+            self.flush(SLackish.message_queue)
         except Exception:
-            self.flush(Slackish.message_queue)
-            self.error(self.default_error_message)
+            self.flush(SLackish.message_queue)
+            self.error()
  
 
 # @Command
