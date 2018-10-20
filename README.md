@@ -5,7 +5,7 @@ Slackish is small library that lets you convert you simple functions into runnin
 
 Usage
 -----
-```
+```python
 from slack_client import SlackClient
 from slackish import Slackish, Command
 
