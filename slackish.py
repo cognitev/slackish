@@ -64,7 +64,9 @@ class Slackish(object):
         """set BOT_ID (bot user_id) using auth.test api"""
         self.BOT_ID = self.slack_client.api_call("auth.test")["user_id"]
 
-    def serve(self):
+    def serve(self, registry=None):
+        if registry:
+            self.registry = registry
         if self.slack_client.rtm_connect(with_team_state=False):
             logger.info("Slackish Bot connected and authenticating!")
             self.auth()
@@ -74,26 +76,33 @@ class Slackish(object):
                 self.channel = channel
                 logger.info("BOT received {} from channel: {}".format(command, channel))            
                 if command:
+                    logger.info("handeling command: {}".format(command))
                     self.handle(command, channel, registry=self.registry)
+                else:
+                    logger.info("No commands passed!")
                 sleep(self.RTM_READ_DELAY)
         else:
             logger.exception("Error while serving!")
 
     
     def command_to_fn_call(self, command, registry):
-        
+        logger.debug("converting command to function call!")
         command_words = command.split()
         command_key = command_words[0].lower()
+        logger.debug("command key is {}".format(command_key))
         try:
             cmd_function = registry[command_key]['cmd']
+            logger.info('Executing command {}!'.format(command_key))
             kwargs = {}
             for i, v in enumerate(command_words):
                 if i%2:
-                    kwargs[v.lower()] = kwargs[command_words[i+1]]
+                    logger.debug(v.lower() + ": " + command_words[i+1])
+                    kwargs[v.lower()] = command_words[i+1]
             cmd_function(**kwargs)
         except KeyError as KE:
-            # Slack command not found!
-            logger.debug("Command Key not found ")
+            logger.debug("Command Key {} not found".format(command_key))
+            logger.debug("Registery: " + registry)
+            logger.exception(KE)
     
     def post(self, message):
         self.slack_client.api_call("chat.postMessage", channel=self.channel, text=message or self.default_message)
@@ -104,19 +113,15 @@ class Slackish(object):
     def flush(self,message_queue):
         for message in message_queue:
             self.post(message)
-        message_queue = []            
 
     def handle(self, command, channel, registry):
         try:
             self.command_to_fn_call(command, registry)
             self.flush(Slackish.message_queue)
-        except Exception:
+            Slackish.message_queue = []
+        except Exception as e:
+            logger.exception(e)
             self.flush(Slackish.message_queue)
+            Slackish.message_queue = []
             self.error(self.default_error_message)
  
-
-# @Command
-# def hi(name="Some name"):
-#     """This is function documentation"""
-#     print("hello, {}".format(name))
-# hi('medo')

@@ -12,7 +12,7 @@ from slackish import Slackish, Command
 @Command
 def create(campaign,on='Bing')
     #Do some logic here!
-    sprint("Campaign created succesfully!)
+    Slackish.send("Campaign created succesfully!)
 
 config = {}
 config['BOT_ID'] = None
