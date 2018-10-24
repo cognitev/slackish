@@ -24,7 +24,6 @@ class Command(object):
 
 class Slackish(object):
     message_queue = []
-    default_message = "Command Executed!"
     default_error_message = "Something went wrong!"
 
     def __init__(self, slack_client, registry, **kwargs):
@@ -128,13 +127,19 @@ class Slackish(object):
         except KeyError as KE:
             logger.debug("Command Key {} not found".format(command_key))
             logger.debug("Registery: " + registry)
-            logger.exception(KE)
+            logger.debug(KE)
+            self.error("Invalid command!")
+            self.cmd_help()
+    
+    def cmd_help(self):
+        for cmd in self.registry:
+            self.post(self.registry[cmd]['help'])
 
     def post(self, message):
         self.slack_client.api_call(
             "chat.postMessage",
             channel=self.channel,
-            text=message or self.default_message)
+            text=message)
 
     def error(self, error_message):
         self.slack_client.api_call(
@@ -155,4 +160,5 @@ class Slackish(object):
             logger.exception(e)
             self.flush(Slackish.message_queue)
             Slackish.message_queue = []
-            self.error(self.default_error_message)
+            self.post("I'm sorry, I don't understand! ")
+            self.cmd_help()
