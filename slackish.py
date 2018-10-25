@@ -92,7 +92,7 @@ class Slackish(object):
         logger.info("Detecting quoted args!!")
         placeholders = {}
         delta = 0
-        regex = regex = r"\"[\w\s,.-;()]*\""
+        regex = r"\"[\w\s,.-;()]*\""
         matches = re.finditer(regex, command, re.MULTILINE)
         for match_num, match in enumerate(matches):
             match_num = match_num + 1
