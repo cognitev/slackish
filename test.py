@@ -15,8 +15,6 @@ class TestSlackishCommand(TestCase):
         }
         self.assertEqual(Command.registry['foo']['help'], registry['foo']['help'])
         self.assertEqual(Command.registry['foo']['argnames'], registry['foo']['argnames'])
-    
-    # def test_cmd_to_function_call(self):
-        
+            
 if __name__ == '__main__':
     unittest.main()
