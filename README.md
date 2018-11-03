@@ -10,7 +10,7 @@ from slackclient import SlackClient
 from slackish import Slackish, Command
 
 @Command
-def create(campaign, on='Bing')
+def create(campaign, on='Bing'):
     Slackish.send("Campaign created succesfully on {}!".format(on))
 
 config = {}
